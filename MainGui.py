@@ -22,13 +22,16 @@ def MainScreen():
     root.title('Employee Details')
 
     root.geometry("1920x1080")
+    root.tk.call("source", "azure.tcl")
+    root.tk.call("set_theme", "light")
 
 
     # Add Some Style
     style = ttk.Style()
+    style.tk.call("set_theme", "light")
 
     # Pick A Theme
-    style.theme_use('default')
+
 
     # Configure the Treeview Colors
     style.configure("Treeview",
@@ -39,7 +42,7 @@ def MainScreen():
 
     # Change Selected Color
     style.map('Treeview',
-              background=[('selected', "#2f5f6e")])
+              background=[('selected', "#d7d7d7")])
 
     # Create a Treeview Frame
     tree_frame = Frame(root)
@@ -128,7 +131,7 @@ def MainScreen():
 
     # Add Record Entry Boxes
     data_frame = LabelFrame(root, text="Details")
-    data_frame.pack(fill="x", expand="yes", padx=40)
+    data_frame.pack(fill="x", expand="yes", padx=75)
 
     Id_lbl = Label(data_frame, text="Id")
     Id_lbl.grid(row=0, column=0, padx=10, pady=10)
@@ -360,9 +363,12 @@ def MainScreen():
 
 
     def calculatewage():
-        Usc = .002
-        Paye = 0.02
-        Prsi = 0.02
+        Tax = 613
+        Usc = .02
+        Paye = 0.2
+        Paye_Higher = 0.4
+        Prsi = 0.04
+
         pps = PPS_entry.get()
         Monthly_Tax_Credits = 1700/12
         employee_fname= Firstname_Entry.get()
@@ -372,12 +378,21 @@ def MainScreen():
 
         hours_worked = float(Hours_worked_entry.get())
         #gross_pay = float(pay_rate * hours_worked)
-        gross_pay = round(pay_rate * hours_worked + Monthly_Tax_Credits,2)
-        Paye_Tax = round(float(gross_pay * Paye),2)
-        Prsi_Tax =  round(float(gross_pay * Prsi),2)
-        Usc_Tax = round(float(gross_pay * Usc),2)
-        Total_Deductions = round(Paye_Tax + Prsi_Tax + Usc_Tax,2)
-        Net_Income = round(gross_pay - Total_Deductions,2)
+        gross_pay = round(pay_rate * hours_worked ,2)
+        if gross_pay <= 3066:
+
+            Paye_Tax = round(float(gross_pay * Paye),2)
+            Prsi_Tax =  round(float(gross_pay * Prsi),2)
+            Usc_Tax = round(float(gross_pay * Usc),2)
+            Total_Deductions = round(Paye_Tax + Prsi_Tax + Usc_Tax - Monthly_Tax_Credits,2)
+            Net_Income = round(gross_pay - Total_Deductions,2)
+        else:
+            Paye_Tax = round(float((gross_pay - Tax) * (Paye_Higher)),2)
+
+            Prsi_Tax = round(float(gross_pay * Prsi), 2)
+            Usc_Tax = round(float(gross_pay * Usc), 2)
+            Total_Deductions = round(Paye_Tax + Prsi_Tax + Usc_Tax - Monthly_Tax_Credits, 2)
+            Net_Income = round(gross_pay - Total_Deductions , 2)
 
 
         conn = sqlite3.connect('Employee_Hours.db')
@@ -439,6 +454,11 @@ def MainScreen():
                   }
                   )
         Total_Deductions_Year = c.fetchall()
+
+        c.execute("SELECT * FROM Pay")
+        result = c.fetchall()
+        csvWriter = csv.writer(open("Payslips_Output.csv", "w"))
+        csvWriter.writerows(result)
 
         conn.commit()
         conn.close()
@@ -517,9 +537,7 @@ def MainScreen():
 
         gui.geometry("1920x1080")
         style = ttk.Style()
-
-        # Pick A Theme
-        style.theme_use('default')
+        style.tk.call("set_theme", "light")
 
         # Configure the Treeview Colors
         style.configure("Treeview",
@@ -599,6 +617,7 @@ def MainScreen():
 
 
 
+
         gui.mainloop()
 
 
@@ -613,36 +632,36 @@ def MainScreen():
         conn.close()
 
     button_frame = LabelFrame(root, text="Options")
-    button_frame.pack(fill="x", expand="yes", padx=40)
+    button_frame.pack(fill="x", expand="yes", padx=75)
 
-    update_button = Button(button_frame, text="Update Record", command=Update_record)
+    update_button = ttk.Button(button_frame, text="Update Record", command=Update_record)
     update_button.grid(row=0, column=0, padx=10, pady=10)
 
-    add_button = Button(button_frame, text="Add Record", command=Add_Record)
+    add_button = ttk.Button(button_frame, text="Add Record", command=Add_Record)
     add_button.grid(row=0, column=1, padx=10, pady=10)
 
-    remove_all_button = Button(button_frame, text="Remove All Records", command=Remove_all)
+    remove_all_button = ttk.Button(button_frame, text="Remove All Records", command=Remove_all)
     remove_all_button.grid(row=0, column=2, padx=10, pady=10)
 
-    remove_one_button = Button(button_frame, text="Remove One Selected", command=Remove_one)
+    remove_one_button = ttk.Button(button_frame, text="Remove One Selected", command=Remove_one)
     remove_one_button.grid(row=0, column=3, padx=10, pady=10)
 
-    remove_many_button = Button(button_frame, text="Remove Selected", command=Remove_many)
+    remove_many_button = ttk.Button(button_frame, text="Remove Selected", command=Remove_many)
     remove_many_button.grid(row=0, column=4, padx=10, pady=10)
 
-    move_up_button = Button(button_frame, text="Move Up", command=Record_up)
+    move_up_button = ttk.Button(button_frame, text="Move Up", command=Record_up)
     move_up_button.grid(row=0, column=5, padx=10, pady=10)
 
-    move_down_button = Button(button_frame, text="Move Down", command=Record_Down)
+    move_down_button = ttk.Button(button_frame, text="Move Down", command=Record_Down)
     move_down_button.grid(row=0, column=6, padx=10, pady=10)
 
-    select_record_button = Button(button_frame, text="Clear Record", command=Clear_entries)
+    select_record_button = ttk.Button(button_frame, text="Clear Record", command=Clear_entries)
     select_record_button.grid(row=0, column=7, padx=10, pady=10)
 
-    wage_button = Button(button_frame, text="Wage", command=calculatewage)
+    wage_button = ttk.Button(button_frame, text="Wage",style='Accent.TButton', command=calculatewage)
     wage_button.grid(row=0, column=8, padx=10, pady=10)
 
-    wage_button = Button(button_frame, text="Cummalative", command=display_last_3)
+    wage_button = ttk.Button(button_frame, text="Cummalative", command=display_last_3)
     wage_button.grid(row=0, column=9, padx=10, pady=10)
 
     # binding
@@ -658,7 +677,7 @@ def MainScreen():
 
 
 
-    
+
 
 
 
